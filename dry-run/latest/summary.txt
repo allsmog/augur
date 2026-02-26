@@ -1,0 +1,6 @@
+dry_run_completed=true
+runroot=/Users/Shayaun.Nejad/VibeCode/open-sourced/augur/dry-run/latest
+db=/tmp/augur-dryrun-db
+sources_rows=13
+sinks_rows=13
+results_files=6

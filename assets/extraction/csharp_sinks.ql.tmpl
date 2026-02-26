@@ -1,0 +1,19 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description C# sink extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import csharp
+
+/*
+  Model sink APIs such as System.IO path sinks, Process.Start, HttpClient, raw SQL, deserialization.
+*/
+
+{{SINK_CALL_PREDICATE}}
+
+from {{SINK_NODE_BINDINGS}}
+where {{SINK_WHERE}}
+select {{SINK_SELECT}}

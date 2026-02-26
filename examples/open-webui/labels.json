@@ -1,0 +1,334 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "run_id": "open-webui-fastapi-demo",
+    "generated_at": "2026-02-26T00:00:00Z",
+    "language": "python",
+    "framework": "fastapi",
+    "model": "gpt-4.1",
+    "project": "open-webui",
+    "notes": [
+      "Example labels for Augur worked run.",
+      "Entries are intentionally compact for portability."
+    ]
+  },
+  "passes": [
+    {
+      "pass_id": 1,
+      "focus": "Path Traversal",
+      "cwes": ["022", "023", "036", "073"],
+      "entries": [
+        {
+          "id": "p1-src-1",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.83,
+          "signature": {
+            "package": null,
+            "module": "fastapi",
+            "type": null,
+            "callable": "Query",
+            "arg_index": null,
+            "flow_kind": "return"
+          },
+          "location": {
+            "file": "backend/api/files.py",
+            "line": 41
+          },
+          "rationale": "FastAPI query parameter helper can return user-controlled path segments.",
+          "evidence": [
+            "Used in route handler argument defaults."
+          ]
+        },
+        {
+          "id": "p1-sink-1",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.86,
+          "signature": {
+            "package": null,
+            "module": "builtins",
+            "type": null,
+            "callable": "open",
+            "arg_index": 0,
+            "flow_kind": "argument"
+          },
+          "location": {
+            "file": "backend/storage/local.py",
+            "line": 128
+          },
+          "rationale": "Opening a file with untrusted path can lead to traversal.",
+          "evidence": [
+            "Path value originates from API input."
+          ]
+        },
+        {
+          "id": "p1-san-1",
+          "role": "sanitizer",
+          "classification": "candidate",
+          "confidence": 0.64,
+          "signature": {
+            "package": null,
+            "module": "os.path",
+            "type": null,
+            "callable": "normpath",
+            "arg_index": 0,
+            "flow_kind": "argument"
+          },
+          "location": {
+            "file": "backend/utils/pathing.py",
+            "line": 19
+          },
+          "rationale": "Canonicalization may sanitize traversal segments if paired with containment checks.",
+          "evidence": [
+            "Helper applies normpath before base-dir checks."
+          ]
+        }
+      ]
+    },
+    {
+      "pass_id": 2,
+      "focus": "Command/Argument Injection",
+      "cwes": ["077", "078", "088"],
+      "entries": [
+        {
+          "id": "p2-src-1",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.8,
+          "signature": {
+            "package": null,
+            "module": "fastapi",
+            "type": null,
+            "callable": "Body",
+            "arg_index": null,
+            "flow_kind": "return"
+          },
+          "location": {
+            "file": "backend/api/admin.py",
+            "line": 54
+          },
+          "rationale": "Request body fields can carry attacker-controlled command fragments."
+        },
+        {
+          "id": "p2-sink-1",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.89,
+          "signature": {
+            "package": null,
+            "module": "subprocess",
+            "type": null,
+            "callable": "run",
+            "arg_index": 0,
+            "flow_kind": "argument"
+          },
+          "location": {
+            "file": "backend/tools/shell_exec.py",
+            "line": 67
+          },
+          "rationale": "Process execution with tainted args is command-injection sensitive."
+        }
+      ]
+    },
+    {
+      "pass_id": 3,
+      "focus": "SSRF",
+      "cwes": ["918", "099", "610"],
+      "entries": [
+        {
+          "id": "p3-src-1",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.81,
+          "signature": {
+            "package": null,
+            "module": "fastapi",
+            "type": null,
+            "callable": "Query",
+            "arg_index": null,
+            "flow_kind": "return"
+          },
+          "location": {
+            "file": "backend/api/connectors.py",
+            "line": 32
+          },
+          "rationale": "URL-like query parameters can control outbound requests."
+        },
+        {
+          "id": "p3-sink-1",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.9,
+          "signature": {
+            "package": null,
+            "module": "httpx",
+            "type": "AsyncClient",
+            "callable": "request",
+            "arg_index": 1,
+            "flow_kind": "argument"
+          },
+          "location": {
+            "file": "backend/net/fetcher.py",
+            "line": 76
+          },
+          "rationale": "Outbound HTTP target argument controls SSRF reachability."
+        }
+      ]
+    },
+    {
+      "pass_id": 4,
+      "focus": "Code Injection",
+      "cwes": ["094", "095"],
+      "entries": [
+        {
+          "id": "p4-src-1",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.7,
+          "signature": {
+            "package": null,
+            "module": "fastapi",
+            "type": null,
+            "callable": "Body",
+            "arg_index": null,
+            "flow_kind": "return"
+          },
+          "location": {
+            "file": "backend/api/tools.py",
+            "line": 28
+          },
+          "rationale": "User-provided script snippets can reach eval-style sinks."
+        },
+        {
+          "id": "p4-sink-1",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.92,
+          "signature": {
+            "package": null,
+            "module": "builtins",
+            "type": null,
+            "callable": "eval",
+            "arg_index": 0,
+            "flow_kind": "argument"
+          },
+          "location": {
+            "file": "backend/tools/dynamic_eval.py",
+            "line": 44
+          },
+          "rationale": "Evaluating untrusted expressions is code injection."
+        }
+      ]
+    },
+    {
+      "pass_id": 5,
+      "focus": "SQL Injection",
+      "cwes": ["089"],
+      "entries": [
+        {
+          "id": "p5-src-1",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.82,
+          "signature": {
+            "package": null,
+            "module": "fastapi",
+            "type": null,
+            "callable": "Query",
+            "arg_index": null,
+            "flow_kind": "return"
+          },
+          "location": {
+            "file": "backend/api/search.py",
+            "line": 15
+          },
+          "rationale": "Query search term can reach SQL builders."
+        },
+        {
+          "id": "p5-sink-1",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.91,
+          "signature": {
+            "package": null,
+            "module": "sqlalchemy.engine",
+            "type": "Connection",
+            "callable": "execute",
+            "arg_index": 0,
+            "flow_kind": "argument"
+          },
+          "location": {
+            "file": "backend/db/query_runner.py",
+            "line": 101
+          },
+          "rationale": "Raw SQL execution is an SQL injection sink when query text is tainted."
+        },
+        {
+          "id": "p5-san-1",
+          "role": "sanitizer",
+          "classification": "candidate",
+          "confidence": 0.72,
+          "signature": {
+            "package": null,
+            "module": "sqlalchemy",
+            "type": null,
+            "callable": "bindparam",
+            "arg_index": null,
+            "flow_kind": "return"
+          },
+          "location": {
+            "file": "backend/db/safe_sql.py",
+            "line": 22
+          },
+          "rationale": "Bound parameters typically mitigate SQL injection when used correctly."
+        }
+      ]
+    },
+    {
+      "pass_id": 6,
+      "focus": "Unsafe Deserialization",
+      "cwes": ["502"],
+      "entries": [
+        {
+          "id": "p6-src-1",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.76,
+          "signature": {
+            "package": null,
+            "module": "fastapi",
+            "type": null,
+            "callable": "Body",
+            "arg_index": null,
+            "flow_kind": "return"
+          },
+          "location": {
+            "file": "backend/api/imports.py",
+            "line": 62
+          },
+          "rationale": "Upload payloads can carry attacker-controlled serialized blobs."
+        },
+        {
+          "id": "p6-sink-1",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.9,
+          "signature": {
+            "package": null,
+            "module": "pickle",
+            "type": null,
+            "callable": "loads",
+            "arg_index": 0,
+            "flow_kind": "argument"
+          },
+          "location": {
+            "file": "backend/serial/loader.py",
+            "line": 33
+          },
+          "rationale": "Unsafe pickle deserialization can allow arbitrary code execution."
+        }
+      ]
+    }
+  ]
+}

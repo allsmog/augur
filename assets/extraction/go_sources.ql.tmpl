@@ -1,0 +1,21 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description Go source extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import go
+
+/*
+  Fill SOURCE_HANDLER_PREDICATE with framework-specific handler detection,
+  then emit source candidates with columns:
+  callable, flow_kind, receiver, module, arg_index, line.
+*/
+
+{{SOURCE_HANDLER_PREDICATE}}
+
+from {{SOURCE_NODE_BINDINGS}}
+where {{SOURCE_WHERE}}
+select {{SOURCE_SELECT}}

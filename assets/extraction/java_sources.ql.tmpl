@@ -1,0 +1,19 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description Java source extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import java
+
+/*
+  Model handler parameter sources (for example Spring annotations or servlet request getters).
+*/
+
+{{SOURCE_HANDLER_PREDICATE}}
+
+from {{SOURCE_NODE_BINDINGS}}
+where {{SOURCE_WHERE}}
+select {{SOURCE_SELECT}}

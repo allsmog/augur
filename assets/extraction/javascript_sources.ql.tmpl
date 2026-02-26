@@ -1,0 +1,19 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description JavaScript/TypeScript source extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import javascript
+
+/*
+  Model HTTP boundary sources such as req.params/query/body/header.
+*/
+
+{{SOURCE_HANDLER_PREDICATE}}
+
+from {{SOURCE_NODE_BINDINGS}}
+where {{SOURCE_WHERE}}
+select {{SOURCE_SELECT}}

@@ -1,0 +1,19 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description Java sink extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import java
+
+/*
+  Model sink APIs such as Runtime.exec, ProcessBuilder.start, JDBC raw query, HTTP clients.
+*/
+
+{{SINK_CALL_PREDICATE}}
+
+from {{SINK_NODE_BINDINGS}}
+where {{SINK_WHERE}}
+select {{SINK_SELECT}}

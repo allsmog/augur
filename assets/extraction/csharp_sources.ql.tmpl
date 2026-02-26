@@ -1,0 +1,19 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description C# source extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import csharp
+
+/*
+  Model endpoint parameter sources from FromRoute/FromQuery/FromBody and HttpRequest accessors.
+*/
+
+{{SOURCE_HANDLER_PREDICATE}}
+
+from {{SOURCE_NODE_BINDINGS}}
+where {{SOURCE_WHERE}}
+select {{SOURCE_SELECT}}

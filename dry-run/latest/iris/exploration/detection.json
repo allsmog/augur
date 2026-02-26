@@ -1,0 +1,26 @@
+{
+  "language": "python",
+  "framework_candidates": [
+    {
+      "name": "fastapi",
+      "score_components": {
+        "import_package": 0.45,
+        "route_decorator": 0.30,
+        "runtime_bootstrap": 0.20,
+        "directory_layout": 0.05
+      },
+      "confidence": 1.0,
+      "evidence": [
+        "from fastapi import FastAPI, Query",
+        "@app.get('/file')",
+        "app = FastAPI()",
+        "app/main.py"
+      ]
+    }
+  ],
+  "references_loaded": [
+    "references/patterns.md",
+    "references/python.md",
+    "references/fastapi.md"
+  ]
+}

@@ -1,0 +1,45 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description Python sink extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import python
+
+private predicate sinkName(string name) {
+  name = "open"
+  or name = "run"
+  or name = "Popen"
+  or name = "request"
+  or name = "get"
+  or name = "post"
+  or name = "eval"
+  or name = "exec"
+  or name = "execute"
+  or name = "loads"
+  or name = "load"
+}
+
+private int sinkArgIndex(string name) {
+  sinkName(name) and result = 0
+}
+
+from Call call, string callee, int argIndex, Expr arg
+where
+  (
+    exists(Name n | call.getFunc() = n and callee = n.getId())
+    or exists(Attribute a | call.getFunc() = a and callee = a.getName())
+  ) and
+  sinkName(callee) and
+  argIndex = sinkArgIndex(callee) and
+  arg = call.getArg(argIndex)
+select arg,
+  "sink_candidate",
+  callee,
+  "flow_kind=argument",
+  "receiver=" + call.getFunc().toString(),
+  "module=" + call.getLocation().getFile().getRelativePath(),
+  "arg_index=" + argIndex.toString(),
+  call.getLocation().getStartLine()

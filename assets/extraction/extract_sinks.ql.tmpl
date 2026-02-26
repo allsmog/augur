@@ -1,0 +1,23 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description {{QUERY_DESCRIPTION}}
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+{{LANGUAGE_IMPORTS}}
+
+{{HELPER_PREDICATES}}
+
+{{SINK_CLAUSES}}
+
+select
+  {{SELECT_NODE}},
+  "sink_candidate",
+  {{SELECT_CALLABLE}},
+  {{SELECT_FLOW_KIND}},
+  {{SELECT_RECEIVER}},
+  {{SELECT_MODULE}},
+  {{SELECT_ARG_INDEX}},
+  {{SELECT_LINE}}

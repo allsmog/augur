@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://augur.dev/schemas/labels_schema.json",
+  "title": "Augur Labels",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "metadata",
+    "passes"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^v?[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "generated_at",
+        "language",
+        "framework",
+        "model",
+        "project"
+      ],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "language": {
+          "type": "string",
+          "enum": ["python", "go", "java", "javascript", "csharp"]
+        },
+        "framework": { "type": ["string", "null"] },
+        "model": { "type": "string", "minLength": 1 },
+        "project": { "type": "string", "minLength": 1 },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "passes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pass_id", "focus", "cwes", "entries"],
+        "properties": {
+          "pass_id": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "focus": { "type": "string", "minLength": 1 },
+          "cwes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9]{2,4}$"
+            }
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "role",
+                "classification",
+                "confidence",
+                "signature",
+                "rationale"
+              ],
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "role": {
+                  "type": "string",
+                  "enum": ["source", "sink", "sanitizer", "summary", "none"]
+                },
+                "classification": {
+                  "type": "string",
+                  "enum": ["tp", "fp", "candidate", "unknown"]
+                },
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "signature": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["callable", "flow_kind", "arg_index"],
+                  "properties": {
+                    "package": { "type": ["string", "null"] },
+                    "module": { "type": ["string", "null"] },
+                    "type": { "type": ["string", "null"] },
+                    "callable": { "type": "string", "minLength": 1 },
+                    "arg_index": {
+                      "anyOf": [
+                        { "type": "integer", "minimum": 0 },
+                        { "type": "null" }
+                      ]
+                    },
+                    "flow_kind": {
+                      "type": "string",
+                      "enum": [
+                        "param",
+                        "argument",
+                        "return",
+                        "receiver",
+                        "field",
+                        "unknown"
+                      ]
+                    }
+                  },
+                  "allOf": [
+                    {
+                      "if": {
+                        "required": ["flow_kind"],
+                        "properties": {
+                          "flow_kind": { "const": "argument" }
+                        }
+                      },
+                      "then": {
+                        "required": ["arg_index"],
+                        "properties": {
+                          "arg_index": { "type": "integer", "minimum": 0 }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "location": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["file", "line"],
+                  "properties": {
+                    "file": { "type": "string", "minLength": 1 },
+                    "line": { "type": "integer", "minimum": 1 }
+                  }
+                },
+                "rationale": { "type": "string", "minLength": 1 },
+                "evidence": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "contains": {
+        "type": "object",
+        "required": ["pass_id"],
+        "properties": { "pass_id": { "const": 1 } }
+      }
+    }
+  }
+}

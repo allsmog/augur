@@ -1,0 +1,19 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description Go sink extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import go
+
+/*
+  Fill SINK_CALL_PREDICATE with risky API families and preferred arg indices.
+*/
+
+{{SINK_CALL_PREDICATE}}
+
+from {{SINK_NODE_BINDINGS}}
+where {{SINK_WHERE}}
+select {{SINK_SELECT}}

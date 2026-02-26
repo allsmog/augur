@@ -1,0 +1,164 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "run_id": "dryrun-latest",
+    "generated_at": "2026-02-26T00:00:00Z",
+    "language": "python",
+    "framework": "fastapi",
+    "model": "simulated-labeler",
+    "project": "augur-dryrun-target",
+    "notes": ["Dry-run labels generated from synthetic target signatures."]
+  },
+  "passes": [
+    {
+      "pass_id": 1,
+      "focus": "Path Traversal",
+      "cwes": ["022", "023", "036", "073"],
+      "entries": [
+        {
+          "id": "p1-src",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.91,
+          "signature": {"package": null, "module": "fastapi", "type": null, "callable": "Query", "arg_index": null, "flow_kind": "return"},
+          "location": {"file": "app/main.py", "line": 10},
+          "rationale": "Route parameter via Query is user-controlled boundary."
+        },
+        {
+          "id": "p1-sink",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.95,
+          "signature": {"package": null, "module": "builtins", "type": null, "callable": "open", "arg_index": 0, "flow_kind": "argument"},
+          "location": {"file": "app/main.py", "line": 11},
+          "rationale": "open(path) can read arbitrary files when path is tainted."
+        }
+      ]
+    },
+    {
+      "pass_id": 2,
+      "focus": "Command/Argument Injection",
+      "cwes": ["077", "078", "088"],
+      "entries": [
+        {
+          "id": "p2-src",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.90,
+          "signature": {"package": null, "module": "fastapi", "type": null, "callable": "Query", "arg_index": null, "flow_kind": "return"},
+          "location": {"file": "app/main.py", "line": 15},
+          "rationale": "User-controlled command fragment from request query parameter."
+        },
+        {
+          "id": "p2-sink",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.97,
+          "signature": {"package": null, "module": "subprocess", "type": null, "callable": "run", "arg_index": 0, "flow_kind": "argument"},
+          "location": {"file": "app/main.py", "line": 16},
+          "rationale": "subprocess.run with shell invocation chain is command sink."
+        }
+      ]
+    },
+    {
+      "pass_id": 3,
+      "focus": "SSRF",
+      "cwes": ["918", "099", "610"],
+      "entries": [
+        {
+          "id": "p3-src",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.90,
+          "signature": {"package": null, "module": "fastapi", "type": null, "callable": "Query", "arg_index": null, "flow_kind": "return"},
+          "location": {"file": "app/main.py", "line": 19},
+          "rationale": "Query URL can direct outbound requests."
+        },
+        {
+          "id": "p3-sink",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.96,
+          "signature": {"package": null, "module": "requests", "type": null, "callable": "get", "arg_index": 0, "flow_kind": "argument"},
+          "location": {"file": "app/main.py", "line": 20},
+          "rationale": "requests.get(url) is SSRF sink when URL is tainted."
+        }
+      ]
+    },
+    {
+      "pass_id": 4,
+      "focus": "Code Injection",
+      "cwes": ["094", "095"],
+      "entries": [
+        {
+          "id": "p4-src",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.89,
+          "signature": {"package": null, "module": "fastapi", "type": null, "callable": "Query", "arg_index": null, "flow_kind": "return"},
+          "location": {"file": "app/main.py", "line": 23},
+          "rationale": "Expression input is user-controlled."
+        },
+        {
+          "id": "p4-sink",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.98,
+          "signature": {"package": null, "module": "builtins", "type": null, "callable": "eval", "arg_index": 0, "flow_kind": "argument"},
+          "location": {"file": "app/main.py", "line": 24},
+          "rationale": "eval(expr) is a direct code execution sink."
+        }
+      ]
+    },
+    {
+      "pass_id": 5,
+      "focus": "SQL Injection",
+      "cwes": ["089"],
+      "entries": [
+        {
+          "id": "p5-src",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.91,
+          "signature": {"package": null, "module": "fastapi", "type": null, "callable": "Query", "arg_index": null, "flow_kind": "return"},
+          "location": {"file": "app/main.py", "line": 27},
+          "rationale": "Search term originates from request query parameter."
+        },
+        {
+          "id": "p5-sink",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.97,
+          "signature": {"package": null, "module": "sqlite3", "type": "Cursor", "callable": "execute", "arg_index": 0, "flow_kind": "argument"},
+          "location": {"file": "app/main.py", "line": 31},
+          "rationale": "Concatenated SQL passed to execute is injection sink."
+        }
+      ]
+    },
+    {
+      "pass_id": 6,
+      "focus": "Unsafe Deserialization",
+      "cwes": ["502"],
+      "entries": [
+        {
+          "id": "p6-src",
+          "role": "source",
+          "classification": "candidate",
+          "confidence": 0.90,
+          "signature": {"package": null, "module": "fastapi", "type": null, "callable": "Query", "arg_index": null, "flow_kind": "return"},
+          "location": {"file": "app/main.py", "line": 35},
+          "rationale": "Serialized payload from request parameter."
+        },
+        {
+          "id": "p6-sink",
+          "role": "sink",
+          "classification": "candidate",
+          "confidence": 0.99,
+          "signature": {"package": null, "module": "pickle", "type": null, "callable": "loads", "arg_index": 0, "flow_kind": "argument"},
+          "location": {"file": "app/main.py", "line": 36},
+          "rationale": "pickle.loads over untrusted bytes is unsafe deserialization sink."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+"node","col1","callable","col3","receiverHint","col5","col6","line"
+"Attribute()","source_candidate","get","flow_kind=return","receiver=app","module=app/main.py","arg_index=-1",10
+"Query()","source_candidate","Query","flow_kind=return","receiver=","module=app/main.py","arg_index=-1",11
+"Attribute()","source_candidate","get","flow_kind=return","receiver=app","module=app/main.py","arg_index=-1",15
+"Query()","source_candidate","Query","flow_kind=return","receiver=","module=app/main.py","arg_index=-1",16
+"Attribute()","source_candidate","get","flow_kind=return","receiver=app","module=app/main.py","arg_index=-1",19
+"Query()","source_candidate","Query","flow_kind=return","receiver=","module=app/main.py","arg_index=-1",20
+"Attribute()","source_candidate","get","flow_kind=return","receiver=requests","module=app/main.py","arg_index=-1",21
+"Attribute()","source_candidate","get","flow_kind=return","receiver=app","module=app/main.py","arg_index=-1",23
+"Query()","source_candidate","Query","flow_kind=return","receiver=","module=app/main.py","arg_index=-1",24
+"Attribute()","source_candidate","get","flow_kind=return","receiver=app","module=app/main.py","arg_index=-1",27
+"Query()","source_candidate","Query","flow_kind=return","receiver=","module=app/main.py","arg_index=-1",28
+"Attribute()","source_candidate","get","flow_kind=return","receiver=app","module=app/main.py","arg_index=-1",35
+"Query()","source_candidate","Query","flow_kind=return","receiver=","module=app/main.py","arg_index=-1",36

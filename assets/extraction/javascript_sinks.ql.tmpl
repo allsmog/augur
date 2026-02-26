@@ -1,0 +1,19 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description JavaScript/TypeScript sink extraction template.
+ * @kind problem
+ * @id {{QUERY_ID}}
+ * @problem.severity recommendation
+ */
+
+import javascript
+
+/*
+  Model sink APIs such as child_process, fs path sinks, outbound HTTP, eval, raw SQL.
+*/
+
+{{SINK_CALL_PREDICATE}}
+
+from {{SINK_NODE_BINDINGS}}
+where {{SINK_WHERE}}
+select {{SINK_SELECT}}

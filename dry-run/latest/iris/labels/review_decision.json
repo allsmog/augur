@@ -1,0 +1,9 @@
+{
+  "approved": true,
+  "reviewer": "dry-run-automation",
+  "timestamp": "2026-02-26T00:05:00Z",
+  "notes": "Synthetic dry-run labels accepted for phase 2 execution.",
+  "scope": {
+    "passes": [1, 2, 3, 4, 5, 6]
+  }
+}

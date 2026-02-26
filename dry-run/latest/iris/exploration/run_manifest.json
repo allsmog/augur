@@ -1,0 +1,11 @@
+{
+  "run_id": "dryrun-latest",
+  "timestamp": "2026-02-26T00:00:00Z",
+  "db_path": "/tmp/augur-dryrun-db",
+  "project_root": "/tmp/augur-dryrun-target",
+  "language": "python",
+  "passes": [1, 2, 3, 4, 5, 6],
+  "model": "simulated-labeler",
+  "codeql_cli": "2.24.x",
+  "packs": {"codeql/python-all": "*"}
+}

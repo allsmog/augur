@@ -1,0 +1,44 @@
+/**
+ * @name {{QUERY_NAME}}
+ * @description {{QUERY_DESCRIPTION}}
+ * @id {{QUERY_ID}}
+ * @kind path-problem
+ * @problem.severity error
+ * @precision {{PRECISION}}
+ * @tags security
+ *       external/cwe/cwe-{{CWE_PRIMARY}}
+{{EXTRA_TAGS}}
+ */
+
+{{LANGUAGE_IMPORTS}}
+
+import {{SOURCE_MODULE}}
+import {{SINK_MODULE}}
+import {{SANITIZER_MODULE}}
+import {{SUMMARY_MODULE}}
+
+module {{CONFIG_NAME}} implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    {{SOURCE_MODULE}}::isSource(source, "{{PASS_KEY}}")
+  }
+
+  predicate isSink(DataFlow::Node sink) {
+    {{SINK_MODULE}}::isSink(sink, "{{PASS_KEY}}")
+  }
+
+  predicate isBarrier(DataFlow::Node node) {
+    {{SANITIZER_MODULE}}::isBarrier(node, "{{PASS_KEY}}")
+  }
+
+  predicate isAdditionalFlowStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
+    {{SUMMARY_MODULE}}::isAdditionalTaintStep(nodeFrom, nodeTo, "{{PASS_KEY}}")
+  }
+}
+
+module {{FLOW_MODULE}} = TaintTracking::Global<{{CONFIG_NAME}}>;
+import {{FLOW_MODULE}}::PathGraph
+
+from {{FLOW_MODULE}}::PathNode source, {{FLOW_MODULE}}::PathNode sink
+where {{FLOW_MODULE}}::flowPath(source, sink)
+select sink.getNode(), source, sink,
+  "{{RESULT_MESSAGE}}"
