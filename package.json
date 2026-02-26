@@ -1,0 +1,9 @@
+{
+  "name": "@kuzushi/augur",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": ["index.js", "index.d.ts", "WORKFLOW.md", "assets/", "references/", "scripts/", "adapters/"],
+  "license": "MIT"
+}
