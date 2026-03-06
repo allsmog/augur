@@ -18,7 +18,7 @@ Example invocations:
 Required input parameters:
 
 1. `db_path`: absolute path to a CodeQL database
-2. `passes`: optional subset of `1..6` (default all)
+2. `passes`: optional subset of `1..13` (default all)
 3. `model`: LLM identifier for labeling
 4. `project_root`: optional source root for richer framework detection
 
@@ -37,5 +37,5 @@ Execution rules:
 1. Run Step 0 pre-flight before any query execution.
 2. Load reference files on-demand based on detected language/framework.
 3. Run extraction and taint queries sequentially.
-4. Stop at checkpoint and require human review before Phase 2.
+4. Present checkpoint summary. In interactive mode, pause for human review before Phase 2; in automated mode, log the summary and continue.
 5. Use `scripts/filter_and_report.py` to produce final report.

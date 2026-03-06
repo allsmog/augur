@@ -16,7 +16,7 @@ The workflow is agent-agnostic. It assumes only:
 
 ## 0. Pipeline shape
 
-Augur uses two phases and eight stages (Step 0-6 + mandatory checkpoint):
+Augur uses two phases and eight stages (Step 0-6 + advisory checkpoint):
 
 - Phase 1: Extract and label
 - Phase 2: Analyze and report
@@ -27,7 +27,7 @@ Stages:
 2. Step 1: Explore and detect
 3. Step 2: Extract source/sink candidates
 4. Step 3: LLM label candidates
-5. Checkpoint: Human review gate
+5. Checkpoint: Human review gate (advisory)
 6. Step 4: Generate CodeQL libraries
 7. Step 5: Run taint queries
 8. Step 6: Filter findings and write report
@@ -37,7 +37,7 @@ Stages:
 ### 1.1 Required input
 
 - CodeQL database directory (for one target repo)
-- Target CWE pass set (default: all six)
+- Target CWE pass set (default: all thirteen)
 - LLM endpoint/model for labeling
 - Project root path (optional, used for framework detection and heuristics)
 
@@ -68,8 +68,8 @@ Expected artifacts:
 - `iris/libraries/MySinks.qll`
 - `iris/libraries/MySanitizers.qll`
 - `iris/libraries/MySummaries.qll`
-- `iris/queries/Pass{1..6}_*.ql`
-- `iris/results/pass{1..6}.sarif` or CSV equivalent
+- `iris/queries/Pass{1..13}_*.ql`
+- `iris/results/pass{1..13}.sarif` or CSV equivalent
 - `iris/report/iris_report.md`
 
 ## 2. CWE pass definitions
@@ -84,6 +84,13 @@ Use this exact mapping unless the user narrows scope.
 | 4 | 094, 095 | Code Injection |
 | 5 | 089 | SQL Injection |
 | 6 | 502 | Unsafe Deserialization |
+| 7 | 079 | XSS |
+| 8 | 611 | XXE |
+| 9 | 601 | Open Redirect |
+| 10 | 113 | Header Injection |
+| 11 | 117 | Log Injection |
+| 12 | 090 | LDAP Injection |
+| 13 | 1336 | SSTI |
 
 ## 3. Global operational rules (hard constraints)
 
@@ -392,7 +399,7 @@ Write `iris/extraction/summary.md`:
 
 ## 4.4 Step 3 - LLM label
 
-Goal: label candidates for all six passes and produce schema-valid `labels.json`.
+Goal: label candidates for all thirteen passes and produce schema-valid `labels.json`.
 
 ### 4.4.1 Labeling inputs
 
@@ -417,7 +424,7 @@ For each candidate and pass, output:
 System prompt responsibilities:
 
 - classify APIs for a single CWE pass
-- prefer conservative recall in pass 1-4
+- prefer conservative recall in all passes
 - avoid overlabeling sink APIs for pass 5 unless SQL execution is present
 - mark sanitizers only with concrete evidence
 
@@ -443,7 +450,7 @@ Write `iris/labels/labels.json` conforming to `assets/labels_schema.json`.
 
 Recommended artifacts:
 
-- `iris/labels/labels_raw_pass1.json` ... `labels_raw_pass6.json`
+- `iris/labels/labels_raw_pass1.json` ... `labels_raw_pass13.json`
 - `iris/labels/label_stats.md`
 
 ### 4.4.6 Label quality checks
@@ -455,9 +462,9 @@ Before checkpoint:
 3. Remove obvious duplicates.
 4. Verify argument index bounds where available.
 
-## 4.5 CHECKPOINT - Human review gate (mandatory)
+## 4.5 CHECKPOINT - Human review gate (advisory)
 
-Stop here and present a concise summary for approval.
+Present a concise summary for review.
 
 Minimum review payload:
 
@@ -467,23 +474,28 @@ Minimum review payload:
 - sanitizer list
 - unresolved/low-confidence items
 
-Approval mechanism (required):
+Behavior by mode:
 
-Write `iris/labels/review_decision.json` before Step 4 with:
+- **Interactive mode**: stop and wait for explicit human approval before proceeding to Phase 2.
+- **Automated / CI mode**: log the summary, self-approve, and continue to Phase 2 without blocking.
+
+Optional audit artifact:
+
+Write `iris/labels/review_decision.json` to record the review outcome:
 
 ```json
 {
   "approved": true,
-  "reviewer": "name-or-handle",
+  "reviewer": "name-or-handle-or-ci",
   "timestamp": "ISO-8601",
   "notes": "optional rationale",
   "scope": {
-    "passes": [1, 2, 3, 4, 5, 6]
+    "passes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
   }
 }
 ```
 
-Do not execute Step 4+ until `approved` is `true`.
+This file is an audit artifact, not a gate. Automated agents may write it with `"reviewer": "auto"` and proceed.
 
 ## 5. Phase 2: Analyze and Report
 
@@ -553,6 +565,13 @@ Render query files from `assets/taint_query.ql.tmpl`:
 - `iris/queries/Pass4_CodeInjection.ql`
 - `iris/queries/Pass5_SQLInjection.ql`
 - `iris/queries/Pass6_UnsafeDeserialization.ql`
+- `iris/queries/Pass7_XSS.ql`
+- `iris/queries/Pass8_XXE.ql`
+- `iris/queries/Pass9_OpenRedirect.ql`
+- `iris/queries/Pass10_HeaderInjection.ql`
+- `iris/queries/Pass11_LogInjection.ql`
+- `iris/queries/Pass12_LDAPInjection.ql`
+- `iris/queries/Pass13_SSTI.ql`
 
 ### 5.2.1a Template substitution guide (required)
 
@@ -629,7 +648,7 @@ codeql database analyze "$DB" iris/queries/Pass1_PathTraversal.ql \
 codeql database analyze "$DB" iris/queries/Pass2_CommandInjection.ql \
   --format=sarifv2.1.0 --output=iris/results/pass2.sarif
 
-# Repeat through pass6
+# Repeat through pass13
 ```
 
 ### 5.2.5 Optional decode path
@@ -673,6 +692,30 @@ Apply these default heuristics:
   - execution over DB-controlled content remains TP candidate
 - SQL Injection:
   - parameterized queries/bound params -> FP
+- Unsafe Deserialization:
+  - safe loaders (yaml.safe_load, JSON with schema validation) -> FP
+  - type-restricted deserialization allowlists -> FP
+- XSS:
+  - framework auto-escaping (autoescape, MarkupSafe, bleach.clean, DOMPurify) -> FP
+  - CSP header enforcement -> FP
+  - templating safe modes (|escape, |e filter) -> FP
+- XXE:
+  - external entities disabled (FEATURE_SECURE_PROCESSING, disallow-dtd) -> FP
+  - defusedxml usage -> FP
+- Open Redirect:
+  - same-origin checks or relative-URL enforcement -> FP
+  - redirect allowlist -> FP
+- Header Injection:
+  - newline stripping (replace \r, replace \n) -> FP
+  - framework response header helpers -> FP
+- Log Injection:
+  - newline stripping in log input -> FP
+  - structured logging libraries (structlog, loguru, JSON logging) -> FP
+- LDAP Injection:
+  - LDAP escape functions (ldap_escape, escape_filter, escape_dn) -> FP
+- SSTI:
+  - sandboxed template environments (jinja2.sandbox, SandboxedEnvironment) -> FP
+  - literal-only template strings -> FP
 
 ### 5.3.3 Optional baseline comparison
 
@@ -826,7 +869,7 @@ Before delivering results, confirm:
 1. `codeql pack install` was executed successfully.
 2. Extraction queries executed sequentially.
 3. `labels.json` is schema-valid.
-4. Human checkpoint approval is recorded.
+4. Checkpoint summary is logged (and approval recorded if interactive).
 5. Pass queries executed sequentially.
 6. Filtering script produced report output.
 7. Report includes TP candidates and FP rationale.

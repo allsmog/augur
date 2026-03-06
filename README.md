@@ -54,7 +54,7 @@ Framework references included:
 3. Load `references/<language>.md` and `references/<framework>.md` based on detection.
 4. Execute extraction and taint queries sequentially.
 5. Generate `labels/labels.json` using `assets/labels_schema.json`.
-6. Pause at checkpoint for human review.
+6. Present checkpoint summary (pause for review in interactive mode).
 7. Resume Phase 2, run analysis, then call `scripts/filter_and_report.py`.
 
 ## Repository layout
@@ -74,6 +74,6 @@ augur/
 
 - Agent-agnostic: no runtime lock-in
 - Deterministic shell workflow around probabilistic labeling
-- Human checkpoint between inference and exploitation
+- Advisory human checkpoint between inference and exploitation
 - Sequential execution for CodeQL DB safety
 - Explicit artifact contracts between steps

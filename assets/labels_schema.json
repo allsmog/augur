@@ -44,13 +44,13 @@
     "passes": {
       "type": "array",
       "minItems": 1,
-      "maxItems": 6,
+      "maxItems": 13,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": ["pass_id", "focus", "cwes", "entries"],
         "properties": {
-          "pass_id": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "pass_id": { "type": "integer", "minimum": 1, "maximum": 13 },
           "focus": { "type": "string", "minLength": 1 },
           "cwes": {
             "type": "array",

@@ -24,6 +24,13 @@ PASS_INFO = {
     4: {"name": "Code Injection", "cwes": ["094", "095"]},
     5: {"name": "SQL Injection", "cwes": ["089"]},
     6: {"name": "Unsafe Deserialization", "cwes": ["502"]},
+    7: {"name": "XSS", "cwes": ["079"]},
+    8: {"name": "XXE", "cwes": ["611"]},
+    9: {"name": "Open Redirect", "cwes": ["601"]},
+    10: {"name": "Header Injection", "cwes": ["113"]},
+    11: {"name": "Log Injection", "cwes": ["117"]},
+    12: {"name": "LDAP Injection", "cwes": ["090"]},
+    13: {"name": "SSTI", "cwes": ["1336"]},
 }
 
 PASS_NAME_TO_ID = {v["name"].lower(): k for k, v in PASS_INFO.items()}
@@ -90,6 +97,41 @@ DB_CONTENT_PATTERNS = [
     re.compile(r"model\.|row\.|record\.|result set", re.IGNORECASE),
 ]
 
+PASS7_FP_PATTERNS = [
+    re.compile(r"autoescape|markupsafe|bleach\.clean|dompurify|sanitize[_-]?html", re.IGNORECASE),
+    re.compile(r"content-security-policy", re.IGNORECASE),
+    re.compile(r"\|escape\b|\{\{.*\|e\}\}", re.IGNORECASE),
+]
+
+PASS8_FP_PATTERNS = [
+    re.compile(r"disallow.*dtd|disable.*external|FEATURE_SECURE_PROCESSING|setFeature.*disallow", re.IGNORECASE),
+    re.compile(r"defusedxml|defused_xml", re.IGNORECASE),
+]
+
+PASS9_FP_PATTERNS = [
+    re.compile(r"same[_-]?origin|url\.startswith\s*\(\s*[\"']/|relative[_-]?url", re.IGNORECASE),
+    re.compile(r"allowed[_-]?urls|redirect[_-]?whitelist|redirect[_-]?allowlist", re.IGNORECASE),
+]
+
+PASS10_FP_PATTERNS = [
+    re.compile(r"strip\(\)|replace.*\\r|replace.*\\n|remove.*newline", re.IGNORECASE),
+    re.compile(r"response\.headers|set_header|add_header", re.IGNORECASE),
+]
+
+PASS11_FP_PATTERNS = [
+    re.compile(r"strip\(\)|replace.*\\n|replace.*\\r|log[_-]?sanitize", re.IGNORECASE),
+    re.compile(r"structlog|loguru|json[_-]?log", re.IGNORECASE),
+]
+
+PASS12_FP_PATTERNS = [
+    re.compile(r"ldap[_-]?escape|escape[_-]?filter|escape[_-]?dn|ldap3.*escape", re.IGNORECASE),
+]
+
+PASS13_FP_PATTERNS = [
+    re.compile(r"sandbox|jinja2\.sandbox|SandboxedEnvironment", re.IGNORECASE),
+    re.compile(r"render_template_string\s*\(\s*[\"']|from_string\s*\(\s*[\"']", re.IGNORECASE),
+]
+
 
 @dataclass
 class Finding:
@@ -140,7 +182,7 @@ def parse_args() -> argparse.Namespace:
 
 def detect_pass_id(name: str, fallback: Optional[int] = None) -> Optional[int]:
     base = name.lower()
-    match = re.search(r"pass\s*([1-6])", base)
+    match = re.search(r"pass\s*(1[0-3]|[1-9])\b", base)
     if match:
         return int(match.group(1))
     match = re.search(r"\bcwe[-_ ]?0*([0-9]{2,4})\b", base)
@@ -370,6 +412,48 @@ def classify_finding(finding: Finding) -> ClassifiedFinding:
             if pattern.search(text):
                 reasons.append(f"unsafe deserialization pattern: `{pattern.pattern}`")
                 return ClassifiedFinding(finding=finding, verdict="likely_tp", reasons=reasons)
+
+    if finding.pass_id == 7:
+        for pattern in PASS7_FP_PATTERNS:
+            if pattern.search(text):
+                reasons.append(f"XSS sanitization heuristic: `{pattern.pattern}`")
+                return ClassifiedFinding(finding=finding, verdict="likely_fp", reasons=reasons)
+
+    if finding.pass_id == 8:
+        for pattern in PASS8_FP_PATTERNS:
+            if pattern.search(text):
+                reasons.append(f"XXE protection heuristic: `{pattern.pattern}`")
+                return ClassifiedFinding(finding=finding, verdict="likely_fp", reasons=reasons)
+
+    if finding.pass_id == 9:
+        for pattern in PASS9_FP_PATTERNS:
+            if pattern.search(text):
+                reasons.append(f"open redirect guard heuristic: `{pattern.pattern}`")
+                return ClassifiedFinding(finding=finding, verdict="likely_fp", reasons=reasons)
+
+    if finding.pass_id == 10:
+        for pattern in PASS10_FP_PATTERNS:
+            if pattern.search(text):
+                reasons.append(f"header injection guard heuristic: `{pattern.pattern}`")
+                return ClassifiedFinding(finding=finding, verdict="likely_fp", reasons=reasons)
+
+    if finding.pass_id == 11:
+        for pattern in PASS11_FP_PATTERNS:
+            if pattern.search(text):
+                reasons.append(f"log injection guard heuristic: `{pattern.pattern}`")
+                return ClassifiedFinding(finding=finding, verdict="likely_fp", reasons=reasons)
+
+    if finding.pass_id == 12:
+        for pattern in PASS12_FP_PATTERNS:
+            if pattern.search(text):
+                reasons.append(f"LDAP injection guard heuristic: `{pattern.pattern}`")
+                return ClassifiedFinding(finding=finding, verdict="likely_fp", reasons=reasons)
+
+    if finding.pass_id == 13:
+        for pattern in PASS13_FP_PATTERNS:
+            if pattern.search(text):
+                reasons.append(f"SSTI sandbox heuristic: `{pattern.pattern}`")
+                return ClassifiedFinding(finding=finding, verdict="likely_fp", reasons=reasons)
 
     # Uncategorized findings default to candidate unless globally filtered.
     reasons.append("no explicit FP/TP heuristic matched")
