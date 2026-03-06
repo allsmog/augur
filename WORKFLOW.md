@@ -288,6 +288,9 @@ Preferred template inputs:
 - `assets/extraction/extract_sinks.ql.tmpl`
 - language starter templates under `assets/extraction/*_sources.ql.tmpl` and `assets/extraction/*_sinks.ql.tmpl`
 
+All language starter templates are stubs. Generate their placeholder bodies from repo evidence
+first, then augment with relevant loaded references for the detected language/frameworks.
+
 Queries should select API candidates with metadata columns:
 
 - package/module
@@ -308,6 +311,20 @@ For generic templates (`extract_sources.ql.tmpl`, `extract_sinks.ql.tmpl`), fill
 - `{{HELPER_PREDICATES}}`
 - `{{SOURCE_CLAUSES}}` or `{{SINK_CLAUSES}}`
 - `{{SELECT_*}}` placeholders
+
+For language starter templates (`*_sources.ql.tmpl`, `*_sinks.ql.tmpl`), fill the shared starter
+contract:
+
+- sources: `{{SOURCE_HANDLER_PREDICATE}}`, `{{SOURCE_NODE_BINDINGS}}`, `{{SOURCE_WHERE}}`, `{{SOURCE_SELECT}}`
+- sinks: `{{SINK_CALL_PREDICATE}}`, `{{SINK_NODE_BINDINGS}}`, `{{SINK_WHERE}}`, `{{SINK_SELECT}}`
+
+Generation rules for every supported language:
+
+- start from observed repo signals: imports/packages, call expressions, handler declarations,
+  route registrations, framework bootstraps, and request/CLI/environment/file access patterns
+- augment only with loaded language/framework references that match observed evidence
+- emit precise sink argument positions per callable/signature
+- if no justified candidate family exists, emit a valid no-match fragment instead of a broad baseline
 
 Language starter selection:
 
