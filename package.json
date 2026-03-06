@@ -1,12 +1,20 @@
 {
   "name": "@kuzushi/augur",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "main": "./index.js",
   "types": "./index.d.ts",
   "scripts": {
     "verify:extraction-templates": "node scripts/verify_extraction_templates.mjs"
   },
-  "files": ["index.js", "index.d.ts", "WORKFLOW.md", "assets/", "references/", "scripts/", "adapters/"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "WORKFLOW.md",
+    "assets/",
+    "references/",
+    "scripts/",
+    "adapters/"
+  ],
   "license": "MIT"
 }
