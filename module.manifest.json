@@ -1,0 +1,14 @@
+{
+  "id": "augur",
+  "displayName": "Augur IRIS Taint Analysis",
+  "version": "0.3.0",
+  "description": "Neuro-symbolic SAST using IRIS methodology — LLM-driven CodeQL taint analysis with human review checkpoint.",
+  "category": "offense",
+  "entry": "./kuzushi-module.js",
+  "author": "allsmog",
+  "license": "MIT",
+  "requires": {
+    "env": [],
+    "bins": ["codeql"]
+  }
+}
